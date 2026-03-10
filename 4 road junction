@@ -1,0 +1,83 @@
+module traffic_controller(
+input clk,
+input reset,
+output reg NS_red, NS_yellow, NS_green,
+output reg EW_red, EW_yellow, EW_green
+);
+
+reg [1:0] state;
+reg [5:0] count;
+
+parameter S0 = 2'b00;
+parameter S1 = 2'b01;
+parameter S2 = 2'b10;
+parameter S3 = 2'b11;
+
+always @(posedge clk or posedge reset)
+begin
+    if(reset)
+    begin
+        state <= S0;
+        count <= 0;
+    end
+    else
+    begin
+        count <= count + 1;
+
+        case(state)
+
+        S0: if(count == 30) begin
+                state <= S1;
+                count <= 0;
+            end
+
+        S1: if(count == 5) begin
+                state <= S2;
+                count <= 0;
+            end
+
+        S2: if(count == 30) begin
+                state <= S3;
+                count <= 0;
+            end
+
+        S3: if(count == 5) begin
+                state <= S0;
+                count <= 0;
+            end
+
+        endcase
+    end
+end
+
+always @(*)
+begin
+    NS_red=0; NS_yellow=0; NS_green=0;
+    EW_red=0; EW_yellow=0; EW_green=0;
+
+    case(state)
+
+    S0: begin
+        NS_green=1;
+        EW_red=1;
+    end
+
+    S1: begin
+        NS_yellow=1;
+        EW_red=1;
+    end
+
+    S2: begin
+        NS_red=1;
+        EW_green=1;
+    end
+
+    S3: begin
+        NS_red=1;
+        EW_yellow=1;
+    end
+
+    endcase
+end
+
+endmodule
